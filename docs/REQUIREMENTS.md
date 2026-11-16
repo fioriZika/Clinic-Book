@@ -52,3 +52,106 @@ Finishing state	One new booked appointment exists (Dr. Berisha, Thursday 10:20, 
 5. Assumptions 
 The limit of 2 future appointments (FR-05) also applies when a receptionist books.
 A "future appointment" is one with status booked whose start is later than now.
+
+Appointment cancellation and doctor daily schedule (Fioralba Zika)
+This section covers appointment cancellation and viewing a doctor's daily schedule. It complements the booking requirements above.
+
+6. Functional requirements
+
+FR-06 – Cancel an appointment
+Priority: Must
+The system shall allow a patient to cancel their own booked appointment at least 24 hours before its start. Within 24 hours of its start, only a receptionist shall be allowed to cancel it.
+
+FR-07 – View a doctor's daily schedule
+Priority: Must
+The system shall allow a doctor to view their own appointments for a selected day in chronological order.
+
+ 7. Proposed acceptance rules
+
+The following details are proposed for team agreement:
+
+- A successful cancellation changes the appointment status from booked to cancelled.
+- Cancellation releases the slot for another booking, provided the slot is still in the future and is not blocked.
+- A cancelled appointment does not count towards the patient's limit of two future appointments.
+- A patient cannot cancel another patient's appointment.
+- An already cancelled appointment cannot be cancelled again.
+- The doctor's daily schedule excludes cancelled appointments.
+- Each schedule entry shows the appointment time, patient name and appointment status.
+- A doctor can access only their own schedule.
+
+ 8. Structured specification – Cancel an appointment (FR-06)
+
+Function:
+Cancel an appointment.
+
+Description:
+Allows a patient or receptionist to cancel a future booked appointment, subject to the cancellation deadline and access rules.
+
+Inputs and sources:
+Appointment ID and acting user from the cancellation screen. Current time from the system clock.
+
+Outputs and destinations:
+A cancellation confirmation or an error explaining why cancellation was refused. The updated appointment is stored and the result is displayed on screen.
+
+Information needed:
+The appointment record, its patient, start time and status; the acting user's identity and role; the current time.
+
+Pre-conditions:
+- The appointment exists and has status booked.
+- The appointment start is in the future.
+- The acting user is either the patient who owns the appointment or a receptionist.
+- If the acting user is the patient, at least 24 hours remain before the appointment starts.
+
+Action:
+1. Find the appointment.
+2. Check the acting user's access.
+3. Check the appointment status and start time.
+4. Apply the 24-hour rule if the acting user is a patient.
+5. Change the appointment status to cancelled.
+6. Save the change and display confirmation.
+
+Post-conditions:
+The appointment has status cancelled and no longer counts towards the patient's future appointment limit. The slot is available again if it is not blocked. If cancellation is refused, nothing changes.
+
+Side effects:
+No additional side effects beyond the appointment and availability changes described above.
+
+Errors:
+- Appointment not found: "Appointment not found".
+- Another patient's appointment: "You cannot cancel this appointment".
+- Less than 24 hours remain for patient cancellation: "Please contact reception to cancel this appointment".
+- Appointment already cancelled: "This appointment is already cancelled".
+- Appointment has started or has another status: "This appointment cannot be cancelled".
+
+9. Scenario – A patient cancels an appointment
+
+Starting situation:
+Elira is logged in and has a booked appointment with Dr. Berisha on Thursday at 10:20. It is Tuesday at 09:00, so more than 24 hours remain.
+
+Normal flow:
+1. Elira opens her appointments.
+2. She selects the appointment with Dr. Berisha.
+3. She chooses Cancel and confirms.
+4. The system checks ownership, status and the cancellation deadline.
+5. The system changes the appointment status to cancelled.
+6. Elira sees a cancellation confirmation.
+
+What can go wrong:
+- Less than 24 hours remain: cancellation is refused and Elira is told to contact reception.
+- The appointment is already cancelled: the system explains that no further cancellation is needed.
+- The appointment belongs to another patient: access is denied.
+
+Other activities:
+Another patient may be searching for available slots. Once cancellation succeeds, the released slot can appear as available.
+
+Finishing state:
+The appointment is cancelled. It no longer counts towards Elira's future appointment limit, and the slot can be booked again if it is not blocked.
+
+10. Assumptions and points for validation
+
+- Exactly 24 hours before the start, a patient may still cancel.
+- Receptionists may cancel future booked appointments even when less than 24 hours remain.
+- Past appointments cannot be cancelled through this function.
+- Cancelled appointment records are retained rather than deleted.
+- All deadline calculations use the clinic's local time zone, Europe/Tirane.
+- The proposed acceptance rules and assumptions require team agreement before implementation.

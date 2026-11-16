@@ -23,3 +23,25 @@ Given the same patient, when a receptionist books, then it is allowed.
 Given the 3rd no-show is 91 days old, then online booking works again.
 US-19 – No overlapping appointments for one patient · FR-17 · Should As a patient, I do not want to be booked with two doctors at the same time, so that I do not hold slots I cannot use.
 Given I have an appointment 10:00–10:20, when I try to book another doctor at 10:00, then it is refused.
+
+
+Appointment cancellation and doctor daily schedule (Fioralba)
+US-08 – Cancel my appointment · FR-06 · Must
+As a patient, I want to cancel my appointment at least 24 hours before it starts, so that I can release a slot I no longer need.
+Acceptance criteria:
+ Given my booked appointment starts in at least 24 hours, when I cancel it, then its status becomes cancelled and the slot becomes available.
+ Given it starts in less than 24 hours, when I try to cancel it, then cancellation is refused and I am told to contact reception.
+ Given an appointment belongs to another patient, when I try to cancel it, then access is denied.
+ US-09 – Cancel an appointment through reception · FR-06 · Must
+As a receptionist, I want to cancel a booked appointment, including within 24 hours of its start, so that I can handle patients who contact the clinic.
+Acceptance criteria:
+ Given a future booked appointment, when I cancel it, then its status becomes cancelled.
+ Given the appointment starts in less than 24 hours, when I cancel it as a receptionist, then cancellation is allowed.
+ Given cancellation succeeds, then the slot becomes available for another booking.
+ Given an appointment is already cancelled, when I try to cancel it again, then no additional change is made and I receive an explanation.
+US-10 – View my daily schedule · FR-07 · Must
+As a doctor, I want to view my appointments for a chosen day in chronological order, so that I can plan my working day.
+Acceptance criteria:
+Given I select a day, then I see my non-cancelled appointments for that day, ordered from earliest to latest.
+ Each entry shows the appointment time, patient name and appointment status.
+ Given there are
