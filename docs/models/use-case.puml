@@ -1,0 +1,76 @@
+@startuml
+title ClinicBook - Use case diagram (Week 6, Dajana Bardhi)
+
+' Scope of this model: doctor availability and booking (FR-02..FR-05, FR-09,
+' FR-16, FR-17). The other use cases are shown to keep the system boundary
+' of Option A complete for the team.
+
+left to right direction
+skinparam usecaseFontSize 12
+skinparam noteFontSize 11
+
+actor "Patient" as Patient
+actor "Receptionist" as Receptionist
+actor "Doctor" as Doctor
+actor "Clinic manager" as Manager
+actor "Clock / timer\n(system actor)" as Clock
+
+rectangle "ClinicBook" {
+  usecase "UC-01\nRegister patient\n(FR-01)" as UC01
+  usecase "UC-02\nSee free slots\n(FR-02)" as UC02
+  usecase "UC-03\nBook a free slot\n(FR-03)" as UC03
+  usecase "UC-04\nBook for a patient\n(FR-03, FR-05)" as UC04
+  usecase "UC-05\nApply booking rules\n(FR-04, FR-05, FR-09, FR-17)" as UC05
+  usecase "UC-06\nReschedule a booking\n(FR-16)" as UC06
+  usecase "UC-07\nCancel an appointment\n(FR-06)" as UC07
+  usecase "UC-08\nView daily schedule\n(FR-07)" as UC08
+  usecase "UC-09\nMark attended / no-show\n(FR-08)" as UC09
+  usecase "UC-10\nBlock a period\n(FR-10)" as UC10
+  usecase "UC-11\nSend reminder\n(FR-11)" as UC11
+  usecase "UC-12\nMonthly report\n(FR-12)" as UC12
+}
+
+Patient --> UC02
+Patient --> UC03
+Patient --> UC06
+Patient --> UC07
+
+Receptionist --> UC01
+Receptionist --> UC02
+Receptionist --> UC04
+Receptionist --> UC07
+Receptionist --> UC09
+
+Doctor --> UC08
+Doctor --> UC10
+Manager --> UC12
+Clock --> UC11
+
+UC03 ..> UC02 : <<include>>
+UC04 ..> UC02 : <<include>>
+UC06 ..> UC02 : <<include>>
+UC03 ..> UC05 : <<include>>
+UC04 ..> UC05 : <<include>>
+UC06 ..> UC05 : <<include>>
+
+note bottom of UC09
+  Feeds the no-show count used
+  by UC-05 (FR-09).
+end note
+
+note right of UC05
+  Rules are checked in order; the first failure wins:
+  clinic hours, future, not blocked;
+  slot free (FR-04);
+  &lt; 2 future bookings (FR-05);
+  no overlap for the patient (FR-17);
+  &lt; 3 no-shows in 90 days online (FR-09).
+end note
+
+note bottom of UC07
+  Patient: up to 24 h before the slot,
+  and only their own appointment.
+  Receptionist: also within 24 h; booked only (FR-06).
+end note
+
+@enduml

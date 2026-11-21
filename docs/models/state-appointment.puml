@@ -1,0 +1,33 @@
+@startuml
+title State diagram - Appointment lifecycle (FR-03, FR-06, FR-08, FR-16)
+
+skinparam noteFontSize 11
+
+state "Booked" as Booked
+state "Cancelled" as Cancelled
+state "Attended" as Attended
+state "No-show" as NoShow
+
+[*] --> Booked : book (FR-03) / create in free slot with UNIQUE(doctor, start)
+
+Booked --> Cancelled : patient cancels, now <= start - 24 h (FR-06)
+Booked --> Cancelled : receptionist cancels at any time (FR-06)
+Booked --> Cancelled : reschedule (FR-16) / new slot booked, old one cancelled atomically
+Booked --> Attended : receptionist marks attended (FR-08)
+Booked --> NoShow : receptionist marks no-show (FR-08)
+
+Cancelled --> [*] : slot is free again (US-06)
+Attended --> [*] : kept for the monthly report (FR-12)
+NoShow --> [*] : counted in the last 90 days (FR-09)
+
+note right of Booked
+  The only state that occupies a doctor's slot
+  and counts towards the 2-future-appointments limit (FR-05).
+end note
+
+note right of NoShow
+  Three no-shows in 90 days mean the patient
+  may only book through reception (FR-09).
+end note
+
+@enduml
