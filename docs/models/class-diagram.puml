@@ -1,0 +1,136 @@
+@startuml
+title ClinicBook - Class diagram (availability and booking, Dajana Bardhi)
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam noteFontSize 11
+
+' ---------- Domain: users ----------
+abstract class User {
+  #id : int
+  #name : string
+  #email : string
+  #passwordHash : string
+  #role : Role
+}
+
+class Patient extends User {
+  +phone : string
+  +dateOfBirth : Date
+  +futureBookedCount(now : DateTimeImmutable) : int
+  +noShowCount(since : DateTimeImmutable) : int
+}
+
+class Receptionist extends User {
+}
+
+class Doctor extends User {
+  +specialty : string
+}
+
+enum Role {
+  PATIENT
+  RECEPTIONIST
+  DOCTOR
+  MANAGER
+}
+
+' ---------- Domain: time and appointments ----------
+class TimeSlot {
+  +doctorId : int
+  +start : DateTimeImmutable
+  +end : DateTimeImmutable
+  +durationMinutes : int = 20
+  +isWithinClinicHours() : bool
+  +isFuture(now : DateTimeImmutable) : bool
+}
+
+class BlockedPeriod {
+  +id : int
+  +doctorId : int
+  +start : DateTimeImmutable
+  +end : DateTimeImmutable
+  +reason : string
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CANCELLED
+  ATTENDED
+  NO_SHOW
+}
+
+class Appointment {
+  +id : int
+  +patientId : int
+  +doctorId : int
+  +slot : TimeSlot
+  +status : AppointmentStatus
+  +createdAt : DateTimeImmutable
+  +cancel(now : DateTimeImmutable, actor : User) : void
+  +belongsTo(patientId : int) : bool
+  +markAttendance(status : AppointmentStatus) : void
+}
+
+' ---------- Application / infrastructure ----------
+class BookingCommand {
+  +patientId : int
+  +doctorId : int
+  +start : DateTimeImmutable
+  +actorRole : Role
+}
+
+class BookingService {
+  +listFreeSlots(doctorId : int, date : Date) : TimeSlot[]
+  +book(command : BookingCommand) : Appointment
+  +reschedule(appointmentId : int, newStart : DateTimeImmutable) : Appointment
+  -assertBookingRules(command : BookingCommand, now : DateTimeImmutable) : void
+}
+
+interface AppointmentRepository {
+  +findByDoctorAndStart(doctorId : int, start : DateTimeImmutable) : Appointment
+  +findOccupiedStarts(doctorId : int, date : Date) : DateTimeImmutable[]
+  +findBlockedPeriods(doctorId : int, date : Date) : BlockedPeriod[]
+  +findOverlappingForPatient(patientId : int, start : DateTimeImmutable, end : DateTimeImmutable) : Appointment[]
+  +countFutureBooked(patientId : int, now : DateTimeImmutable) : int
+  +countNoShows(patientId : int, since : DateTimeImmutable) : int
+  +save(appointment : Appointment) : Appointment
+}
+
+interface Clock {
+  +now() : DateTimeImmutable
+}
+
+' ---------- Relationships ----------
+User <|-- Patient
+User <|-- Receptionist
+User <|-- Doctor
+User --> Role
+
+Doctor "1" --> "0..*" Appointment : has
+Patient "1" --> "0..*" Appointment : holds
+Doctor "1" --> "0..*" BlockedPeriod : blocks
+Doctor "1" --> "0..*" TimeSlot : offers
+Appointment "1" *-- "1" TimeSlot : occupies
+Appointment --> AppointmentStatus
+
+BookingService ..> BookingCommand : reads
+BookingService ..> Appointment : <<create>>
+BookingService ..> TimeSlot : <<create>>
+BookingService --> AppointmentRepository
+BookingService --> Clock
+AppointmentRepository ..> Appointment
+AppointmentRepository ..> BlockedPeriod
+
+note right of Appointment
+  Only BOOKED occupies a slot and counts towards FR-05.
+  UNIQUE (doctorId, slot.start) while BOOKED -> FR-04.
+  CANCELLED releases the slot again (US-06).
+end note
+
+note left of BookingService
+  Rules checked in order; first failure wins.
+  Clock is injected so 24 h / 90-day rules are testable.
+end note
+
+@enduml

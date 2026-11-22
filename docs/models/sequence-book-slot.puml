@@ -1,0 +1,77 @@
+@startuml
+title Sequence - See free slots and book one (FR-02, FR-03, FR-04, FR-05, FR-09, FR-17)
+
+autonumber
+actor Patient as Patient
+participant "Slim route" as Route
+participant "BookingService" as Service
+participant "Clock" as Clock
+participant "AppointmentRepository" as Repo
+database "Database" as DB
+
+== Step 1: see the free slots (FR-02) ==
+
+Patient -> Route : GET /doctors/{id}/slots?date=...
+Route -> Service : listFreeSlots(doctorId, date)
+Service -> Clock : now()
+Clock --> Service : now
+Service -> Repo : findOccupiedStarts(doctorId, date)
+Service -> Repo : findBlockedPeriods(doctorId, date)
+Repo -> DB : SELECT booked slots and blocked periods for that day
+DB --> Repo : rows
+Repo --> Service : occupied[], blocked[]
+Service --> Route : free 20-minute slots (08:00-15:40, Mon-Fri)
+Route --> Patient : list of slots
+
+== Step 2: book the chosen slot (FR-03) ==
+
+Patient -> Route : POST /appointments {doctorId, start}
+Route -> Service : book(BookingCommand: patientId, doctorId, start, actorRole)
+Service -> Clock : now()
+Clock --> Service : now
+
+Service -> Repo : countFutureBooked(patientId, now)
+Repo -> DB : SELECT COUNT(*) WHERE status=BOOKED AND start>now
+DB --> Repo : count
+Repo --> Service : futureCount
+break futureCount >= 2 -> FR-05
+  Service --> Route : Error "maximum of 2 future appointments"
+  Route --> Patient : 409 + explanation
+end
+
+Service -> Repo : findOverlappingForPatient(patientId, start, start+20min)
+Repo --> Service : overlaps[]
+break overlaps not empty -> FR-17
+  Service --> Route : Error "you already have an appointment at this time"
+  Route --> Patient : 409 + explanation
+end
+
+opt actorRole == PATIENT (FR-09)
+  Service -> Repo : countNoShows(patientId, now - 90 days)
+  Repo --> Service : noShows
+  break noShows >= 3 -> FR-09
+    Service --> Route : Error "please call reception"
+    Route --> Patient : 403 + explanation
+  end
+end
+
+Service -> Repo : findByDoctorAndStart(doctorId, start)
+Repo --> Service : existing appointment?
+break existing status = BOOKED -> FR-04
+  Service --> Route : Error "slot no longer available"
+  Route --> Patient : 409 + explanation
+end
+
+Service -> Repo : save(Appointment BOOKED) in one transaction
+Repo -> DB : INSERT with UNIQUE(doctorId, start) where BOOKED
+DB --> Repo : inserted row
+break UNIQUE violation (concurrent booking) -> FR-04
+  Repo --> Service : SlotTaken
+  Service --> Route : Error "slot no longer available"
+  Route --> Patient : 409 + explanation
+end
+Repo --> Service : saved appointment
+Service --> Route : Appointment (BOOKED)
+Route --> Patient : 201 confirmation (doctor, date, time)
+
+@enduml
