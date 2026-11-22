@@ -1,0 +1,116 @@
+@startuml
+title ClinicBook - Fioralba Zika domain model (cancellation and daily schedule)
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam noteFontSize 10
+skinparam linetype ortho
+
+' Source of truth: docs/REQUIREMENTS.md and docs/USER_STORIES.md on develop.
+' FR-02, FR-03, FR-04, FR-05, FR-06, FR-07, FR-09 and FR-17 are referenced.
+' FR-16 is "Could" and is deliberately not modelled as a lifecycle change here.
+
+abstract class User {
+  #id : int
+  #name : string
+}
+
+class Patient extends User {
+  +registered : bool = true
+  +futureBookedCount(now : DateTime) : int
+  +noShowsLast90Days(now : DateTime) : int
+  +hasOverlappingBooked(now : DateTime) : bool
+}
+
+class Receptionist extends User {
+}
+
+class Doctor extends User {
+  +viewDailySchedule(day : Date) : DailyScheduleEntry[]
+}
+
+class Appointment {
+  +id : int
+  +start : DateTime
+  +durationMinutes : int = 20
+  +status : AppointmentStatus
+  +isFuture(now : DateTime) : bool
+  +belongsTo(patient : Patient) : bool
+  +cancel(actor : User, now : DateTime) : void
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CANCELLED
+}
+
+class TimeSlot {
+  +start : DateTime
+  +end : DateTime
+  +durationMinutes : int = 20
+  +isWithinClinicHours() : bool
+}
+
+class BlockedPeriod {
+  +id : int
+  +start : DateTime
+  +end : DateTime
+}
+
+class DailyScheduleEntry <<derived>> {
+  +time : DateTime
+  +patientName : string
+  +status : AppointmentStatus
+}
+
+' Associations
+User <|-- Patient
+User <|-- Receptionist
+User <|-- Doctor
+
+Patient "1" <-- "0..*" Appointment : patient
+Doctor "1" <-- "0..*" Appointment : doctor
+TimeSlot "1" <-- "0..1" Appointment : occupies
+Doctor "1" --> "0..*" BlockedPeriod : blocks
+Doctor "1" ..> "0..*" DailyScheduleEntry : derives
+DailyScheduleEntry "0..*" ..> "1" Appointment : from
+Appointment --> AppointmentStatus
+
+note right of Appointment
+  Status BOOKED is the active booking.
+  Status CANCELLED is retained history and releases the slot.
+  cancel needs: status BOOKED, start in the future, and either
+  owner patient at least 24 h before start, or any receptionist
+  before start (FR-06, US-08, US-09).
+end note
+
+note bottom of Patient
+  Lifetime association to Appointment is 0..* because records are kept.
+  Future active bookings are the subset with status BOOKED and start later than now.
+  FR-05 constraint: that subset has at most 2 members, checked on each booking.
+  Cancelled appointments do not count (proposed acceptance rule).
+  FR-17: a patient may not hold overlapping BOOKED appointments (Should).
+end note
+
+note right of Patient
+  FR-09 (Should): 3 no-shows in the last 90 days allow booking only through reception.
+  The source of no-show records is not defined in the shared documents (open question).
+end note
+
+note left of TimeSlot
+  Slots are 20 minutes, 08:00-16:00, Monday to Friday (FR-02).
+  A slot is free only if future, not blocked, and without a BOOKED appointment.
+  FR-04: at most one BOOKED appointment per doctor and start time.
+end note
+
+note right of BlockedPeriod
+  A slot inside a blocked period is not offered as free
+  (booking structured specification).
+end note
+
+note bottom of Doctor
+  FR-07: view own non-cancelled appointments for a chosen day,
+  in chronological order. Each entry shows time, patient name and status.
+end note
+
+@enduml
