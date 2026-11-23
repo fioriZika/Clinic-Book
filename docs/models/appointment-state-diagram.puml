@@ -1,0 +1,34 @@
+@startuml
+title ClinicBook - Appointment state diagram (Fioralba Zika)
+
+skinparam noteFontSize 11
+
+state "Booked" as Booked
+state "Cancelled" as Cancelled
+
+[*] --> Booked : book (FR-03) [registered patient, free slot] / create appointment
+
+Booked --> Cancelled : patient cancels [owner AND start in future AND at least 24 h before start] / status = Cancelled, slot released
+Booked --> Cancelled : receptionist cancels [receptionist AND start in future] / status = Cancelled, slot released
+
+Cancelled --> [*] : record retained; no further cancellation defined
+
+note right of Booked
+  Only BOOKED occupies a slot and counts towards the limit of 2 future bookings (FR-04, FR-05).
+  A refused cancel request leaves the state unchanged: wrong owner, start not in future,
+  or patient less than 24 h before start (FR-06, US-08, US-09).
+end note
+
+note left of Booked
+  Time passing alone is not a cancellation event.
+  No automatic attendance or no-show transition is drawn: the shared documents do not say
+  who records those outcomes or when (open question).
+end note
+
+note right of Cancelled
+  Terminal state of this modelled lifecycle, not deletion.
+  Cancelled records are retained (proposed assumption) and the slot becomes free again.
+  Exactly 24 h before start is still allowed for a patient cancel (proposed assumption).
+end note
+
+@enduml
