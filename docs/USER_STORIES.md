@@ -77,4 +77,3 @@ As a new patient, I want to register myself in the system, so that I can book ap
 - Given incomplete or invalid information, then the system displays an appropriate error message.
 - Given an existing patient record is identified, then duplicate registration is prevented.
 - Given successful registration, then I receive a confirmation message and can proceed to appointment booking.
-ss
