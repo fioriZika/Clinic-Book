@@ -45,3 +45,36 @@ Acceptance criteria:
 Given I select a day, then I see my non-cancelled appointments for that day, ordered from earliest to latest.
  Each entry shows the appointment time, patient name and appointment status.
  Given there are
+
+
+## Patient Registration (Xhoel Elezi)
+
+### US-01 – Register a patient through reception
+
+- **Requirement:** FR-01
+- **Priority:** Must
+
+As a receptionist, I want to register a new patient in the system, so that appointments can be booked on their behalf.
+
+**Acceptance criteria:**
+
+- Given valid patient details, when I submit the registration form, then a new patient record is created.
+- Given missing mandatory information, when I submit the form, then the system displays a validation message.
+- Given invalid patient information, then registration is refused until the information is corrected.
+- Given an existing patient record is identified, then the system prevents duplicate registration.
+- Given successful registration, then the patient becomes available for appointment booking.
+
+### US-02 – Register as a patient
+
+- **Requirement:** FR-01
+- **Priority:** Must
+
+As a new patient, I want to register myself in the system, so that I can book appointments online without contacting reception.
+
+**Acceptance criteria:**
+
+- Given valid personal information, when I submit the registration form, then my patient record is created.
+- Given incomplete or invalid information, then the system displays an appropriate error message.
+- Given an existing patient record is identified, then duplicate registration is prevented.
+- Given successful registration, then I receive a confirmation message and can proceed to appointment booking.
+ss

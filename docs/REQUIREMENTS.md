@@ -155,3 +155,89 @@ The appointment is cancelled. It no longer counts towards Elira's future appoint
 - Cancelled appointment records are retained rather than deleted.
 - All deadline calculations use the clinic's local time zone, Europe/Tirane.
 - The proposed acceptance rules and assumptions require team agreement before implementation.
+
+
+## Patient Registration (Xhoel Elezi)
+
+### 1. Functional Requirement
+
+**FR-01 – Patient Registration**
+
+**Priority:** Must
+**Related user stories:** US-01, US-02
+
+The system shall allow receptionists to register new patients and patients to register themselves online.
+
+The system shall validate patient information, prevent duplicate patient records and provide confirmation after successful registration.
+
+### 2. Proposed Validation Rules
+
+- First name and last name must not be empty.
+- Date of birth must be valid and cannot be in the future.
+- Phone number must have a valid format.
+- Email address, when provided, must have a valid format.
+- Mandatory fields must be completed before submission.
+- Duplicate patient records must be prevented.
+- Invalid information must produce a clear validation message.
+
+### 3. Structured Specification
+
+| Property | Description |
+|---|---|
+| Requirement ID | FR-01 |
+| Name | Patient Registration |
+| Actors | Patient, Receptionist |
+| Priority | Must |
+| Inputs | Personal and contact information |
+| Preconditions | The registration function is available |
+| Processing | Validate information and check for duplicate records |
+| Outputs | Registration confirmation or validation message |
+| Postconditions | A valid patient record exists in the system |
+| Related stories | US-01, US-02 |
+
+### 4. Registration Scenario
+
+**Scenario name:** Register a new patient
+
+**Actors:** Patient, Receptionist
+
+**Starting state:**
+
+A new patient needs to be registered before booking an appointment.
+
+**Normal flow:**
+
+1. The patient or receptionist opens the registration form.
+2. The required personal information is entered.
+3. The registration form is submitted.
+4. The system validates the submitted information.
+5. The system checks for existing patient records.
+6. A new patient record is created.
+7. The system displays a registration confirmation.
+8. The patient can proceed to appointment booking.
+
+**What can go wrong:**
+
+- Mandatory information is missing.
+- The submitted information is invalid.
+- A matching patient record already exists.
+- A technical error prevents registration.
+
+In these cases, the system displays an appropriate error message and does not create an invalid or duplicate patient record.
+
+**Other activities:**
+
+A receptionist may search for an existing patient before starting a new registration.
+
+**Finishing state:**
+
+The patient is successfully registered and is available for appointment booking.
+
+### 5. Assumptions and Points for Validation
+
+- Which patient information should be mandatory?
+- Should email verification be required for online registration?
+- Which fields should be used to identify duplicate patients?
+- Should receptionists be allowed to update existing patient records?
+- Should online registration require a user account?
+- The proposed validation rules and assumptions require team agreement before implementation.
