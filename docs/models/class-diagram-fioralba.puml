@@ -1,5 +1,5 @@
 @startuml
-title ClinicBook - Fioralba Zika domain model (cancellation and daily schedule)
+title ClinicBook - Domain model (cancellation and daily schedule)
 
 skinparam classAttributeIconSize 0
 skinparam classFontSize 12
@@ -8,7 +8,7 @@ skinparam linetype ortho
 
 ' Source of truth: docs/REQUIREMENTS.md and docs/USER_STORIES.md on develop.
 ' FR-02, FR-03, FR-04, FR-05, FR-06, FR-07, FR-09 and FR-17 are referenced.
-' FR-16 is "Could" and is deliberately not modelled as a lifecycle change here.
+' FR-16 is "Could" and is not modelled as a lifecycle change in this diagram.
 
 abstract class User {
   #id : int

@@ -46,16 +46,19 @@ java -jar plantuml.jar -tsvg docs/models/*.puml
 
 ---
 
-## Fioralba Zika contribution - cancellation and doctor daily schedule
+## Cancellation and doctor daily schedule models
 
-Dajana's diagrams above are left unchanged. After fetching `origin/develop`, `docs/models/class-diagram.puml` already existed from Dajana's merged model PR, so Fioralba's class model uses the separate name below. The state diagram name is new.
+**Contributor:** Fioralba Zika  
+**Scope:** appointment cancellation and the doctor's daily schedule.
+
+The availability and booking models in this folder are unchanged. The folder already uses `docs/models/class-diagram.puml` for that model, so the cancellation and daily-schedule class model uses `class-diagram-fioralba.puml`.
 
 ### Purpose and links
 
 | Diagram | PlantUML source | Rendered SVG | Purpose |
 | --- | --- | --- | --- |
-| Domain class model | [class-diagram-fioralba.puml](class-diagram-fioralba.puml) | [class-diagram-fioralba.svg](class-diagram-fioralba.svg) | Shows the domain concepts for booking, cancellation and the doctor's daily schedule. It separates all stored appointment history from the small subset of future active bookings. |
-| Appointment state model | [appointment-state-diagram.puml](appointment-state-diagram.puml) | [appointment-state-diagram.svg](appointment-state-diagram.svg) | Shows the confirmed appointment lifecycle and the different cancellation permissions for a patient and a receptionist. |
+| Domain class model | [class-diagram-fioralba.puml](class-diagram-fioralba.puml) | [class-diagram-fioralba.svg](class-diagram-fioralba.svg) | Models the domain concepts for booking, cancellation and the doctor's daily schedule. It separates all stored appointment history from the small subset of future active bookings. |
+| Appointment state model | [appointment-state-diagram.puml](appointment-state-diagram.puml) | [appointment-state-diagram.svg](appointment-state-diagram.svg) | Models the confirmed appointment lifecycle and the different cancellation permissions for a patient and a receptionist. |
 
 ### How to view or render
 
@@ -69,11 +72,11 @@ java -jar plantuml.jar -tsvg docs/models/class-diagram-fioralba.puml docs/models
 
 - Without a local install, paste a `.puml` file into <https://www.plantuml.com/plantuml/> or use the `/svg/` service.
 
-The two SVGs in this folder were generated with the PlantUML online server (1.2026.9beta4). The output was inspected for syntax errors, text labels and multiplicities. No local Java or Graphviz is installed in this workspace, so local rendering was not verified.
+The committed SVGs were rendered with the PlantUML online server (1.2026.9beta4). The rendered output was checked for syntax errors, text labels and multiplicities. Local rendering with Java and Graphviz was not verified.
 
 ### Traceability
 
-| Requirement / story | Priority / status | Where it appears in Fioralba's models |
+| Requirement / story | Priority / status | Where it appears in these models |
 | --- | --- | --- |
 | FR-02, US-03 - free 20-minute slots | Must, confirmed | `TimeSlot` class and slot note in the class diagram. |
 | FR-03, US-04, US-05 - book a free slot | Must, confirmed | Initial `book` transition; `Patient`, `Appointment` and `Receptionist` classes. |
@@ -108,12 +111,12 @@ The two SVGs in this folder were generated with the PlantUML online server (1.20
 
 **Unresolved questions for the team**
 
-1. Who records `Attended` and `No-show`, and when? The shared documents do not define this. FR-08 and FR-12 are referenced in Dajana's state diagram but are not defined in `REQUIREMENTS.md`, so no automatic attendance or no-show transition is drawn here.
-2. Is rescheduling (FR-16, Could) in scope? If yes, does it create a new appointment and cancel the old one, or update the same record? Dajana's diagram shows one interpretation; these diagrams do not.
-3. Patient registration is referenced as US-01 but is not written in the shared documents, and Xhoel's planned contribution has not been merged. How should `registered` be defined?
+1. Who records `Attended` and `No-show`, and when? The shared documents do not define this. FR-08 and FR-12 are referenced in `state-appointment.puml` but are not defined in `REQUIREMENTS.md`, so no automatic attendance or no-show transition is drawn here.
+2. Is rescheduling (FR-16, Could) in scope? If yes, does it create a new appointment and cancel the old one, or update the same record? `state-appointment.puml` shows one interpretation; these diagrams do not.
+3. Patient registration is referenced as US-01 but is not written in the shared documents or present on `develop`. How should `registered` be defined?
 4. The proposed acceptance rules and assumptions in `REQUIREMENTS.md` sections 7 and 10 still need team agreement: cancelled appointments not counting towards the limit, keeping cancelled records, exactly 24 hours being allowed, and using Europe/Tirane time.
 5. Where do no-show records come from for FR-09, and can a doctor blocked period have a reason or an actor who creates it? These details are not in the shared documents.
-6. The last acceptance criterion of US-10 ends mid-sentence in `USER_STORIES.md` ("Given there are"). The team should complete it before implementation.
+6. The last acceptance criterion of US-10 is incomplete in `USER_STORIES.md` ("Given there are"). This wording needs completion before implementation.
 
 ### Consistency between the two diagrams
 
@@ -121,6 +124,6 @@ Both diagrams use the same two statuses, `BOOKED` and `CANCELLED`. Both say that
 
 ### Short presentation script
 
-**Class diagram:** "We begin with three actors: patient, receptionist and doctor. A patient and a doctor each have many appointment records over time, but only the booked ones with a future start are active. The limit of two applies to that active subset, not to all history. Every appointment occupies one 20-minute slot, and a slot can have at most one booked appointment. A receptionist may cancel as well as a patient. The doctor's daily list is a derived view that leaves out cancelled appointments."
+**Class diagram:** "The class diagram models three user types: patient, receptionist and doctor. A patient and a doctor each have many appointment records over time, but only the booked ones with a future start are active. The limit of two applies to that active subset, not to all history. Every appointment occupies one 20-minute slot, and a slot can have at most one booked appointment. A receptionist may cancel as well as a patient. The doctor's daily list is a derived view that leaves out cancelled appointments."
 
-**State diagram:** "A new appointment starts in Booked. There are two explicit ways to cancel it. The patient can cancel only their own appointment and only at least 24 hours before it starts. A receptionist can cancel any future booked appointment, including within 24 hours. Passing time does not cancel anything. Cancelled is the end of the modelled lifecycle, but the record is kept and the slot is free again. We did not add automatic Attended or No-show transitions because the shared requirements do not say who records them."
+**State diagram:** "A new appointment starts in Booked. There are two explicit ways to cancel it. The patient can cancel only their own appointment and only at least 24 hours before it starts. A receptionist can cancel any future booked appointment, including within 24 hours. Passing time does not cancel anything. Cancelled is the end of the modelled lifecycle, but the record is kept and the slot is free again. No automatic Attended or No-show transitions are modelled because the shared requirements do not say who records them or when."

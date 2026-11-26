@@ -1,5 +1,5 @@
 @startuml
-title ClinicBook - Appointment state diagram (Fioralba Zika)
+title ClinicBook - Appointment state diagram
 
 skinparam noteFontSize 11
 
